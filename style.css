@@ -1,0 +1,47 @@
+body{
+    display: flex;
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+#input-for-id{
+    padding: 20px 100px;
+    display: inline-block;
+    transition: all 0.6s ease;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: inline-block;
+    transition: ttransform 0.1s ease, box-shadow 0.1s ease;
+}
+#Config-text-input-id{
+    padding: 20px 30px;
+    margin: 5px;
+    background-color: #333;
+    color: #f0f0f0;
+    border-radius: 10px;
+    font-size: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 1s ease;
+    border: none;
+    cursor: pointer;
+}
+
+#Config-text-input-id:hover {
+  background-color: white;
+  color: #121212;
+  box-shadow: 0 6px 15px rgb(146, 30, 255);
+  border: 3px solid rgb(146, 30, 255);
+}
+#input-for-id:hover{
+    box-shadow: 0 6px 15px rgb(146, 30, 255);
+}
+
+.div-for-detals-in-tags-1 {
+    background-color:#ddd;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
