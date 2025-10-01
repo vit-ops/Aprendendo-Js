@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Biblioteca</title>
+<link rel="icon" href="Icon.png">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<style>
+/* Reset e fonte */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'DM Sans', sans-serif; }
+
+/* Body */
+body {
+    background-image: url('Fundo-DataCenter.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+/* Títulos */
+h1, h2 {
+    text-align: center;
+    color: #fff;
+}
+
+h1 {
+    background: rgba(30,144,255,0.85);
+    padding: 25px 10px;
+    font-size: 32px;
+    letter-spacing: 1px;
+}
+
+h2 { color: #333; }
+
+/* Botão logout */
+.logout-btn {
+    display: block;
+    margin: 15px auto;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.logout-btn:hover { transform: scale(1.05); }
+
+/* Tabs */
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.tab-btn {
+    background: rgba(255,255,255,0.8);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.tab-btn.active {
+    background: #1e90ff;
+    color: white;
+}
+
+/* Sections */
+.section {
+    display: none;
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.section.active { display: block; }
+
+ul { list-style:none; padding:0; }
+ul li { margin-bottom:10px; padding:10px; background:#f0f8ff; border-radius:10px; display:flex; justify-content:space-between; align-items:center; }
+
+/* Botões genéricos */
+button { padding:6px 12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.3s; }
+button.deletar { background:#e74c3c; color:white; }
+button.deletar:hover { background:#c0392b; transform:scale(1.05); }
+button.alterar { background:#3498db; color:white; }
+button.alterar:hover { background:#2980b9; }
+button.aprovar { background:#2ecc71; color:white; }
+button.aprovar:hover { background:#27ae60; }
+button.rejeitar { background:#e74c3c; color:white; }
+button.rejeitar:hover { background:#c0392b; }
+button.avaliar { background:#f39c12; color:white; }
+button.avaliar:hover { background:#d35400; }
+
+/* Modal Geral */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left:0; top:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.modal-content {
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    max-width:450px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 8px 25px rgba(0,0,0,0.2);
+}
+
+.close { position:absolute; right:20px; top:15px; cursor:pointer; font-size:24px; font-weight:bold; color:#e74c3c; }
+.close:hover { transform: scale(1.2); }
+
+.modal-content h2 { margin-bottom:15px; color:#1e90ff; }
+.modal-content p { margin-bottom:10px; font-weight:500; }
+.modal-content .aprovar,
+.modal-content .rejeitar { width:40%; margin:5px; }
+
+/* CSS Melhorado para Aba Livros */
+#books input, #books button {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+#books input {
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    width: calc(33% - 10px);
+    margin-right: 10px;
+    transition: 0.3s;
+}
+
+#books input:focus {
+    border-color: #1e90ff;
+    outline: none;
+    box-shadow: 0 0 8px rgba(30,144,255,0.3);
+}
+
+#books button {
+    padding: 10px 20px;
+    border-radius: 12px;
+    background-color: #1e90ff;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+#books button:hover {
+    background-color: #0077cc;
+    transform: scale(1.05);
+}
+
+#booksList {
+    margin-top: 20px;
+}
+
+#booksList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    background: #f0f8ff;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+#booksList li:hover {
+    background: #e0f0ff;
+}
+
+#booksList li button.deletar {
+    background-color: #e74c3c;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+#booksList li button.deletar:hover {
+    background-color: #c0392b;
+    transform: scale(1.05);
+}
+
+/* Modal Usuário com cores nos botões */
+.modal-user button {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.3s;
+    color: #fff;
+}
+
+.modal-user button.devolver { background-color: #e74c3c; }
+.modal-user button.devolver:hover { background-color: #c0392b; }
+
+.modal-user button.renovar { background-color: #2ecc71; }
+.modal-user button.renovar:hover { background-color: #27ae60; }
+
+.modal-user button.tornar-admin { background-color: #1e90ff; }
+.modal-user button.tornar-admin:hover { background-color: #0077cc; }
+
+.modal-user button.tornar-user { background-color: #8e44ad; }
+.modal-user button.tornar-user:hover { background-color: #71368a; }
+
+.modal-user button.alterar-senha { background-color: #f39c12; }
+.modal-user button.alterar-senha:hover { background-color: #d35400; }
+
+/* Notificações */
+#notificationsList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    background: #f0f8ff;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+#notificationsList li button { margin-left:10px; }
+
+/* Efeito hover para notificações */
+#notificationsList li:hover { background: #e0f0ff; }
+</style>
+
+</head>
+<body>
+<h1>Painel do Administrador</h1>
+<button class="logout-btn" onclick="logout()">Sair</button>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="showSection('users')">Usuários</button>
+    <button class="tab-btn" onclick="showSection('books')">Livros</button>
+    <button class="tab-btn" onclick="showSection('notifications')">Notificações</button>
+</div>
+
+<!-- Seção Usuários -->
+<div id="users" class="section active">
+    <h2>Usuários</h2>
+    <ul id="usersList"></ul>
+</div>
+
+<!-- Seção Livros -->
+<div id="books" class="section">
+    <h2>Livros</h2>
+    <input type="text" id="bookCode" placeholder="Código" required>
+    <input type="text" id="bookTitle" placeholder="Título" required>
+    <input type="text" id="bookAuthor" placeholder="Autor" required>
+    <button onclick="addBook()">Adicionar</button>
+    <ul id="booksList"></ul>
+</div>
+
+<!-- Seção Notificações -->
+<div id="notifications" class="section">
+    <h2>Notificações</h2>
+    <ul id="notificationsList"></ul>
+</div>
+
+<!-- Modal Usuário -->
+<div id="modalUser" class="modal">
+  <div class="modal-content" id="modalUserContent">
+    <span class="close" onclick="fecharModalUser()">&times;</span>
+    <h2>Dados do Usuário</h2>
+    <p><strong>Nome:</strong> <span id="modalUsername"></span></p>
+    <p><strong>Sala:</strong> <span id="modalSala"></span></p>
+    <p><strong>Livros emprestados:</strong></p>
+    <ul id="modalBooksList"></ul>
+    <input type="text" id="newPassword" placeholder="Nova senha">
+    <button onclick="alterarSenha()">Alterar senha</button>
+    <br>
+  </div>
+</div>
+
+<!-- Modal Notificação -->
+<div id="modalNotif" class="modal">
+  <div class="modal-content" id="modalNotifContent">
+    <span class="close" onclick="fecharModalNotif()">&times;</span>
+    <h2>Avaliar Solicitação</h2>
+    <p><strong>Usuário:</strong> <span id="notifUser"></span></p>
+    <p><strong>Livro:</strong> <span id="notifBook"></span></p>
+    <button class="aprovar" onclick="aprovarNotificacao()">Aprovar</button>
+    <button class="rejeitar" onclick="rejeitarNotificacao()">Rejeitar</button>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAUrO5wu86tpKL2H_u-w41hEdkFl3Qx5sY",
+  authDomain: "jcd-bibilhoteca.firebaseapp.com",
+  projectId: "jcd-bibilhoteca",
+  storageBucket: "jcd-bibilhoteca.firebasestorage.app",
+  messagingSenderId: "129282684827",
+  appId: "1:129282684827:web:3cab16bb4bff72fd06533e",
+  measurementId: "G-8RHGVLR034"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let currentNotifId = null;
+let selectedUserId = null;
+
+// Tabs
+function showSection(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector(`.tab-btn[onclick="showSection('${id}')"]`).classList.add('active');
+}
+
+// Logout
+function logout(){ auth.signOut().then(()=>window.location.href="login.html"); }
+
+// Autenticação e carregamento inicial
+auth.onAuthStateChanged(user => {
+    if(user){
+        currentUser = user;
+        db.collection("users").doc(user.uid).get().then(doc=>{
+            if(!doc.exists || doc.data().role !== "admin"){
+                alert("Acesso negado");
+                auth.signOut();
+                window.location.href="login.html";
+            } else {
+                loadUsers();
+                loadBooks();
+                loadNotifications();
+            }
+        });
+    } else {
+        window.location.href="login.html";
+    }
+});
+
+// ------------------ Usuários ------------------
+function loadUsers(){
+    const ul = document.getElementById("usersList");
+    ul.innerHTML = "";
+    db.collection("users").get().then(snapshot=>{
+        snapshot.forEach(doc=>{
+            const u = doc.data();
+            const li = document.createElement("li");
+            li.textContent = `${u.username || "Sem nome"} - Sala: ${u.sala || "?"} (${u.role})`;
+            li.style.cursor = "pointer";
+            li.onclick = ()=>abrirModalUser(doc.id);
+            ul.appendChild(li);
+        });
+    }).catch(err=>console.error("Erro ao carregar usuários:", err));
+}
+
+async function abrirModalUser(userId){
+    selectedUserId = userId;
+    const doc = await db.collection("users").doc(userId).get();
+    if(!doc.exists) return;
+    const data = doc.data();
+    document.getElementById("modalUsername").textContent = data.username || "?";
+    document.getElementById("modalSala").textContent = data.sala || "?";
+
+    // Carregar livros emprestados
+    const ulBooks = document.getElementById("modalBooksList");
+    ulBooks.innerHTML = "";
+    const snapshot = await db.collection("notifications")
+        .where("user","==",userId)
+        .where("status","==","aprovado")
+        .get();
+    snapshot.forEach(async docN=>{
+        const bookDoc = await db.collection("books").doc(docN.data().bookId).get();
+        const li = document.createElement("li");
+        li.textContent = bookDoc.exists ? bookDoc.data().nome : "Livro desconhecido";
+        // Botão devolver
+        const btnDev = document.createElement("button");
+        btnDev.textContent = "Devolver";
+        btnDev.onclick = async ()=> {
+            if(confirm(`Confirmar devolução do livro "${li.textContent}"?`)){
+                await db.collection("notifications").doc(docN.id).update({status:"devolvido"});
+                abrirModalUser(userId);
+            }
+        };
+        li.appendChild(btnDev);
+        ulBooks.appendChild(li);
+    });
+
+
+    document.getElementById("modalUser").style.display="flex";
+}
+
+// Fechar modal clicando no X ou fora
+document.getElementById("modalUser").onclick = function(e){
+    if(e.target===this) fecharModalUser();
+};
+function fecharModalUser(){ document.getElementById("modalUser").style.display="none"; }
+
+// Alterar senha
+function alterarSenha(){
+    const newPass = document.getElementById("newPassword").value;
+    if(!newPass) return alert("Digite uma nova senha!");
+    firebase.auth().currentUser.updatePassword(newPass)
+    .then(()=>alert("Senha alterada com sucesso!"))
+    .catch(err=>alert(err.message));
+}
+
+// Tornar admin/usuário
+function tornarAdmin(){ 
+    if(!selectedUserId) return;
+    db.collection("users").doc(selectedUserId).update({role:"admin"}).then(()=>abrirModalUser(selectedUserId));
+}
+function tornarUser(){ 
+    if(!selectedUserId) return;
+    db.collection("users").doc(selectedUserId).update({role:"user"}).then(()=>abrirModalUser(selectedUserId));
+}
+
+// ------------------ Livros ------------------
+function loadBooks(){
+    const ul = document.getElementById("booksList");
+    ul.innerHTML = "";
+    db.collection("books").get().then(snapshot=>{
+        snapshot.forEach(doc=>{
+            const data = doc.data();
+            const li = document.createElement("li");
+            li.textContent = `${data.codigo} - ${data.nome} - ${data.autor}`;
+            const btn = document.createElement("button");
+            btn.textContent = "Excluir";
+            btn.className = "deletar";
+            btn.onclick = ()=>db.collection("books").doc(doc.id).delete().then(loadBooks);
+            li.appendChild(btn);
+            ul.appendChild(li);
+        });
+    });
+}
+function addBook(){
+    const code = document.getElementById("bookCode").value;
+    const title = document.getElementById("bookTitle").value;
+    const author = document.getElementById("bookAuthor").value;
+    if(code && title && author){
+        db.collection("books").add({codigo: code, nome: title, autor: author}).then(()=>{
+            document.getElementById("bookCode").value="";
+            document.getElementById("bookTitle").value="";
+            document.getElementById("bookAuthor").value="";
+            loadBooks();
+        });
+    }
+}
+
+// ------------------ Notificações ------------------
+async function loadNotifications(){
+    const ul = document.getElementById("notificationsList");
+    ul.innerHTML = "";
+    const snapshot = await db.collection("notifications").where("status","==","pendente").get();
+    snapshot.forEach(async doc=>{
+        const data = doc.data();
+        const userDoc = await db.collection("users").doc(data.user).get();
+        const userName = userDoc.exists ? userDoc.data().username : "Usuário desconhecido";
+        const bookDoc = await db.collection("books").doc(data.bookId).get();
+        const bookName = bookDoc.exists ? bookDoc.data().nome : "Livro desconhecido";
+
+        const li = document.createElement("li");
+        li.textContent = `${userName} solicitou: ${bookName}`;
+
+        const btnAvaliar = document.createElement("button");
+        btnAvaliar.textContent = "Avaliar";
+        btnAvaliar.className = "avaliar";
+        btnAvaliar.onclick = ()=>abrirModalNotif(doc.id, userName, bookName);
+
+        li.appendChild(btnAvaliar);
+        ul.appendChild(li);
+    });
+}
+
+function abrirModalNotif(notifId, userName, bookName){
+    currentNotifId = notifId;
+    document.getElementById("notifUser").textContent = userName;
+    document.getElementById("notifBook").textContent = bookName;
+    document.getElementById("modalNotif").style.display="flex";
+}
+document.getElementById("modalNotif").onclick = function(e){
+    if(e.target===this) fecharModalNotif();
+};
+function fecharModalNotif(){ document.getElementById("modalNotif").style.display="none"; }
+
+function aprovarNotificacao(){
+    if(currentNotifId) db.collection("notifications").doc(currentNotifId).update({status:"aprovado"}).then(()=>{fecharModalNotif(); loadNotifications();});
+}
+function rejeitarNotificacao(){
+    if(currentNotifId) db.collection("notifications").doc(currentNotifId).update({status:"rejeitado"}).then(()=>{fecharModalNotif(); loadNotifications();});
+}
+</script>
+</body>
+</html>

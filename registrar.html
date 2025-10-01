@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar</title>
+<link rel="icon" href="Icon.png">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<style>
+body { 
+    margin:0;
+    padding:0;
+    font-family:'DM Sans', sans-serif; 
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background-image: url('Fundo-DataCenter.jpg'); 
+    background-size: cover;
+    background-position: center;
+}
+
+.login-container { 
+    background: rgba(255,255,255,0.95); 
+    padding:40px; 
+    border-radius:15px; 
+    box-shadow:0 4px 20px rgba(0,0,0,0.1); 
+    width: 90%; 
+    max-width:400px;
+    text-align: center;
+}
+
+.login-container h2 { 
+    margin-bottom:30px; 
+    color:#333;
+}
+
+.login-container input { 
+    width:100%; 
+    padding:12px; 
+    margin-bottom:15px; 
+    border:1px solid #ccc; 
+    border-radius:8px; 
+    font-size:16px;
+}
+
+.login-container button { 
+    width:100%; 
+    padding:12px; 
+    background:#00bfff; 
+    color:white; 
+    font-size:16px; 
+    border:none; 
+    border-radius:8px; 
+    cursor:pointer; 
+    transition:0.3s;
+}
+
+.login-container button:hover { 
+    background:#009acd;
+}
+
+.flash-message { 
+    color:red; 
+    text-align:center; 
+    margin-bottom:15px;
+}
+
+.extra-buttons { 
+    display:flex; 
+    justify-content:center; 
+    margin-top:20px;
+}
+
+.extra-buttons a { 
+    text-decoration:none; 
+    padding:10px 20px; 
+    background:#1e90ff; 
+    color:white; 
+    border-radius:8px; 
+    transition:0.3s;
+}
+
+.extra-buttons a:hover { 
+    opacity:0.9; 
+    transform:scale(1.03);
+}
+</style>
+</head>
+<body>
+<div class="login-container">
+    <h2>Registrar</h2>
+    <p id="message" class="flash-message"></p>
+    <form id="registerForm">
+        <input type="text" id="username" placeholder="Usuário" required>
+        <input type="text" id="sala" placeholder="Sala" required>
+        <input type="email" id="email" placeholder="E-mail" required>
+        <input type="text" id="password" placeholder="Senha" required>
+        <button type="submit">Registrar</button>
+    </form>
+    <div class="extra-buttons">
+        <a href="login.html">Voltar ao Login</a>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAUrO5wu86tpKL2H_u-w41hEdkFl3Qx5sY",
+  authDomain: "jcd-bibilhoteca.firebaseapp.com",
+  projectId: "jcd-bibilhoteca",
+  storageBucket: "jcd-bibilhoteca.firebasestorage.app",
+  messagingSenderId: "129282684827",
+  appId: "1:129282684827:web:3cab16bb4bff72fd06533e",
+  measurementId: "G-8RHGVLR034"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const registerForm = document.getElementById("registerForm");
+const messageP = document.getElementById("message");
+
+registerForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const sala = document.getElementById("sala").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+        const user = userCredential.user;
+        db.collection("users").doc(user.uid).set({
+            username: username,
+            sala: sala,
+            role: "user"
+        }).then(() => {
+            messageP.style.color = "green";
+            messageP.textContent = "Usuário registrado com sucesso!";
+            setTimeout(() => { window.location.href = "login.html"; }, 2000);
+        }).catch(err => messageP.textContent = err.message);
+    })
+    .catch(err => messageP.textContent = err.message);
+});
+</script>
+</body>
+</html>

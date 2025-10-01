@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuário - Biblioteca</title>
+<link rel="icon" href="Icon.png">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<style>
+body {
+    margin: 0;
+    font-family: 'DM Sans', sans-serif;
+    background-image: url('Fundo-DataCenter.jpg'); 
+    background-size: cover;
+    background-position: center;
+    color: #333;
+}
+
+header {
+    background: rgba(30,144,255,0.85);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.1);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+table th {
+    background: #1e90ff;
+    color: white;
+}
+
+button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+    background: #218838;
+}
+
+#message {
+    color: #ff4c4c;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+<header>Bem-vindo, <span id="usernameHeader"></span></header>
+<div class="container">
+    <h2>Livros Disponíveis</h2>
+    <p id="message"></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Autor</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="booksTable">
+            <!-- Livros serão inseridos aqui pelo JS -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAUrO5wu86tpKL2H_u-w41hEdkFl3Qx5sY",
+  authDomain: "jcd-bibilhoteca.firebaseapp.com",
+  projectId: "jcd-bibilhoteca",
+  storageBucket: "jcd-bibilhoteca.firebasestorage.app",
+  messagingSenderId: "129282684827",
+  appId: "1:129282684827:web:3cab16bb4bff72fd06533e",
+  measurementId: "G-8RHGVLR034"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+
+// Obter usuário logado
+auth.onAuthStateChanged(user => {
+    if(user){
+        currentUser = user;
+        document.getElementById("usernameHeader").textContent = user.email;
+        loadBooks();
+    } else {
+        window.location.href = "login.html";
+    }
+});
+
+// Carregar livros do Firestore
+async function loadBooks(){
+    const tbody = document.getElementById("booksTable");
+    tbody.innerHTML = "";
+
+    const snapshot = await db.collection("books").get();
+    for(const doc of snapshot.docs){
+        const livro = doc.data();
+
+        // Verifica se o livro já está emprestado
+        const emprestadoSnap = await db.collection("notifications")
+            .where("bookId","==",doc.id)
+            .where("status","==","aprovado")
+            .get();
+        const emprestado = !emprestadoSnap.empty;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${livro.codigo || "Sem código"}</td>
+            <td>${livro.nome}</td>
+            <td>${livro.autor}</td>
+            <td><button ${emprestado ? "disabled" : ""} onclick="solicitarLivro('${doc.id}')">${emprestado ? "Indisponível" : "Solicitar"}</button></td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+// Solicitar livro (cria notificação)
+function solicitarLivro(bookId){
+    if(!currentUser) return;
+    db.collection("notifications").add({
+        user: currentUser.uid,
+        bookId: bookId,
+        status: "pendente",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(()=>{
+        document.getElementById("message").textContent = "Solicitação enviada!";
+        loadBooks(); // atualiza a tabela
+        setTimeout(()=>{ document.getElementById("message").textContent = ""; },3000);
+    }).catch(err=>{
+        document.getElementById("message").textContent = "Erro: "+err.message;
+    });
+}
+</script>
+</body>
+</html>
