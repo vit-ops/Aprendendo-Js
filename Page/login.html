@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
-<link rel="icon" href="Icon.png">
+<link rel="icon" href="/Image/Icon.png">
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -17,7 +17,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-image: url('Fundo-DataCenter.jpg'); 
+    background-image: url('/Image/Fundo-DataCenter.jpg'); 
     background-size: cover;
     background-position: center;
 }
@@ -96,7 +96,7 @@ button:hover {
     </form>
 
     <div class="login-option">
-        <p>Não tem uma conta? <a href="registrar.html">Registrar</a></p>
+        <p>Não tem uma conta? <a href="/Pages/registrar.html">Registrar</a></p>
     </div>
 </div>
 
@@ -130,10 +130,10 @@ loginForm.addEventListener("submit", (e) => {
         .then(doc => {
             if(doc.exists){
                 const role = doc.data().role;
-                if(role === "admin") window.location.href = "admin.html";
-                else window.location.href = "user.html";
+                if(role === "admin") window.location.href = "/Pages/admin.html";
+                else window.location.href = "/Pages/user.html";
             } else {
-                errorP.textContent = "Usuário não encontrado no Firestore!";
+                errorP.textContent = "Error!";
             }
         })
         .catch(err => errorP.textContent = err.message);

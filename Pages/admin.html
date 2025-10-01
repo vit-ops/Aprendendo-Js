@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Biblioteca</title>
-<link rel="icon" href="Icon.png">
+<link rel="icon" href="/Image/Icon.png">
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -14,7 +14,7 @@
 
 /* Body */
 body {
-    background-image: url('Fundo-DataCenter.jpg');
+    background-image: url('/Image/Fundo-DataCenter.jpg');
     background-size: cover;
     background-position: center;
     min-height: 100vh;
@@ -337,7 +337,7 @@ function showSection(id){
 }
 
 // Logout
-function logout(){ auth.signOut().then(()=>window.location.href="login.html"); }
+function logout(){ auth.signOut().then(()=>window.location.href="/Page/login.html"); }
 
 // Autenticação e carregamento inicial
 auth.onAuthStateChanged(user => {
@@ -347,7 +347,7 @@ auth.onAuthStateChanged(user => {
             if(!doc.exists || doc.data().role !== "admin"){
                 alert("Acesso negado");
                 auth.signOut();
-                window.location.href="login.html";
+                window.location.href="/Page/login.html";
             } else {
                 loadUsers();
                 loadBooks();
@@ -355,7 +355,7 @@ auth.onAuthStateChanged(user => {
             }
         });
     } else {
-        window.location.href="login.html";
+        window.location.href="/Page/login.html";
     }
 });
 
