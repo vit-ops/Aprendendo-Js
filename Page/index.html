@@ -96,7 +96,11 @@ button:hover {
     </form>
 
     <div class="login-option">
+<<<<<<< HEAD
         <p>Não tem uma conta? <a href="/Pages/registrar.html">Registrar</a></p>
+=======
+        <p>Não tem uma conta? <a href="/Page_3/index.html">Registrar</a></p>
+>>>>>>> 29d54e8 (Sua mensagem de commit)
     </div>
 </div>
 
@@ -130,8 +134,13 @@ loginForm.addEventListener("submit", (e) => {
         .then(doc => {
             if(doc.exists){
                 const role = doc.data().role;
+<<<<<<< HEAD
                 if(role === "admin") window.location.href = "/Pages/admin.html";
                 else window.location.href = "/Pages/user.html";
+=======
+                if(role === "admin") window.location.href = "/Page_2/index.html";
+                else window.location.href = "/Page_4/index.html";
+>>>>>>> 29d54e8 (Sua mensagem de commit)
             } else {
                 errorP.textContent = "Error!";
             }
